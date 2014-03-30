@@ -77,6 +77,7 @@ class DummyAgent(CaptureAgent):
     '''
     Your initialization code goes here, if you need any.
     '''
+    legalPositions = self.getFood(gameState)
 
 
   def chooseAction(self, gameState):
@@ -90,4 +91,52 @@ class DummyAgent(CaptureAgent):
     '''
 
     return random.choice(actions)
+
+
+class ExactInference(InferenceModule):
+    """
+    The exact dynamic inference module should use forward-algorithm
+    updates to compute the exact belief function at each time step.
+    """
+
+    def initializeUniformly(self, gameState):
+        "Begin with a uniform distribution over ghost positions."
+        self.beliefs = util.Counter()
+        for p in self.legalPositions: self.beliefs[p] = 1.0
+        self.beliefs.normalize()
+
+    def observe(self, gameState, index):
+        allPossible = util.Counter()
+
+        position = gameState.getAgentPosition(index)
+            
+        if position:
+            allPossible[position] = 1
+        else:
+            noisyDistance = gameState.getAgentDistances()[index]
+            pacmanPosition = gameState.getAgentPosition(self.index)
+
+            "*** YOUR CODE HERE ***"
+
+            for 
+                trueDistance = self.distancer.getDistance(position, pacmanPosition)
+                allPossible[p] = getDistanceProb(trueDistance, noisyDistance) * self.beliefs[p]
+
+        "*** END YOUR CODE HERE ***"
+
+        allPossible.normalize()
+        self.beliefs = allPossible
+
+    def elapseTime(self, gameState):
+        allPossible = util.Counter()
+        for p in self.legalPositions:
+            newPosDist = self.getPositionDistribution(self.setGhostPosition(gameState, p))
+            for newPos, prob in newPosDist.items():
+                allPossible[newPos] += prob * self.beliefs[p]
+
+        allPossible.normalize()
+        self.beliefs = allPossible
+
+    def getBeliefDistribution(self):
+        return self.beliefs
 
